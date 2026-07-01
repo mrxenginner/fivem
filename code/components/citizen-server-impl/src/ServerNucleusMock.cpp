@@ -14,8 +14,34 @@
 #include <StructuredTrace.h>
 
 #include <TcpListenManager.h>
+#include <NoticeLogicProcessor.h>
 
 #include <chrono>
+
+// 100KiB cap, conditional notices should fit more than comfortably under this limit
+#define MAX_NOTICE_FILESIZE 102400
+
+static void DownloadAndProcessNotices(fx::ServerInstanceBase* server, HttpClient* httpClient)
+{
+	HttpRequestOptions options;
+	options.maxFilesize = MAX_NOTICE_FILESIZE;
+	httpClient->DoGetRequest("https://gss.cfx-services.net/v1/public/promotions-targeting", options, [server, httpClient](bool success, const char* data, size_t length)
+	{
+		// Double checking received size because CURL will let bigger files through if the server doesn't specify Content-Length outright
+		if (success && length <= MAX_NOTICE_FILESIZE)
+		{
+			try
+			{
+				auto noticesBlob = nlohmann::json::parse(data, data + length);
+				fx::NoticeLogicProcessor::BeginProcessingNotices(server, noticesBlob);
+			}
+			catch (std::exception& e)
+			{
+				trace("Notice error: %s\n", e.what());
+			}
+		}
+	});
+}
 
 static InitFunction initFunction([]()
 {
@@ -121,6 +147,8 @@ static InitFunction initFunction([]()
 				static auto webVar = instance->AddVariable<std::string>("web_baseUrl", ConVar_None, host);
 
 				registerSuccess = true;
+
+				DownloadAndProcessNotices(instance, httpClient);
 			});
 		});
 	}, INT32_MAX);
