@@ -166,7 +166,7 @@ static void ProcessIntegrationTask(void* collider, void* internalForce, void* in
 
 static HookFunction hookFunction([]()
 {
-	static ConVar<bool> wheelFpsFixEnable("game_enableFrameRateIndependentWheelPhysics", ConVar_Replicated, true, &g_wheelFpsFixEnabled);
+	static ConVar<bool> wheelFpsFixEnable("game_enableFrameRateIndependentWheelPhysics", ConVar_Replicated, false, &g_wheelFpsFixEnabled);
 
 	g_wheelCompressionOffset = *hook::get_pattern<uint32_t>("45 0F 57 ? F3 0F 11 ? ? ? 00 00 F3 0F 5C", 8);
 	kColliderTypeOffset = *hook::get_pattern<char>("8B 4B ? 8D 41 ? 83 F8 ? 76 ? 0F 28 43", 2);
