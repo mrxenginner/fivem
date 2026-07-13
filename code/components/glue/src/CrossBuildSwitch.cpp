@@ -45,7 +45,7 @@ void InitializeBuildSwitch(int build, int pureLevel, std::wstring poolSizesIncre
 			{ "build", build },
 			{ "pureLevel", pureLevel },
 			{ "poolSizesIncrease", ToNarrow(poolSizesIncreaseSetting) },
-			{ "executable", defaultBuild },
+			{ "executable", std::max(build, defaultBuild) },
 			{ "currentBuild", xbr::GetRequestedGameBuild() },
 			{ "currentPureLevel", fx::client::GetPureLevel() },
 			{ "currentPoolSizesIncrease", std::move(currentPoolSizesIncreaseSetting) },
